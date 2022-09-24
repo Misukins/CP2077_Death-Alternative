@@ -1,6 +1,6 @@
 --[[ 
 	[Death Alternative]
-	Version: 2.4.0
+	Version: 3.2
 	Orig Creator: 3nvy
 	Edit: Amy (Misukins) 
 	Date: August+++
@@ -9,7 +9,7 @@
 local DeathAlternative 	= {
 	title 				= "Death Alternative",
 	description 		= "This mod is remake from (3nvy's) original Death Alternative Mod.",
-	version 			= "2.4",
+	version 			= "3.2",
 	creator 			= "3nvy",
 	editby 				= "Misukins"
 }
@@ -19,6 +19,10 @@ local useMod 			= false
 local useOldFeatures 	= false
 local useVApartment 	= false
 local useRipperDocs 	= false
+local QuestsEnabled 	= true
+
+local unCheckQuest 		= {}
+local QEMess 			= {}
 
 --[[ TODO - this might take sometime!
 local usefastTravelLocations = false
@@ -26,11 +30,9 @@ local fastTravelSpawnTable = {
 	[1] = {},
 }
 
+--]]
 
-
-]]
-
-local DEBUG 			= false
+local DEBUG 			= true
 local userSettingsFile 	= "config/settings.AltD.json"
 local IProps 			= {
 	deltaTime 			= 0,
@@ -81,6 +83,10 @@ local Config = {
 		{ name = "Rock", 		time = 10, 	healthRegen = 5, 	price = 500 },
 	}
 }
+
+function unCheckQuest.Untrack()
+	Game.untrack()
+end
 
 function hasGodMode(player)
 	return Game.GetGodModeSystem():HasGodMode(player:GetEntityID(), "Immortal")
@@ -192,6 +198,11 @@ function runUpdates(player)
 		else
 			IProps.canDrawBuyLifePackScreen = false
 		end
+	end
+	if (QuestsEnabled == false) then
+		unCheckQuest.Untrack()
+	else
+		QuestsEnabled = true
 	end
 end
 
@@ -394,7 +405,7 @@ registerForEvent("onDraw", function()
 		ImGui.Separator()
 		ImGui.Text("Use old features:")
 		ImGui.Text("This will use original locations for everything,")
-		ImGui.Text("not modded by me just 1.3fix.")
+		ImGui.Text("not modded by me just 1.3++.")
 		ImGui.Text("!! Remember set hotkey to exit hotel room! !!")
 		ImGui.Text(" ")
 		state, pressed = ImGui.Checkbox("Use old features", useOldFeatures)
@@ -404,7 +415,7 @@ registerForEvent("onDraw", function()
 			useVApartment 	= false
 		end
 		ImGui.Separator()
-		state, pressed = ImGui.Checkbox("Use nearest RipperDoc", useRipperDocs)
+		state, pressed = ImGui.Checkbox("Use random RipperDoc", useRipperDocs)
 		if pressed then 
 			useRipperDocs = state
 			useOldFeatures 	= false
@@ -418,6 +429,18 @@ registerForEvent("onDraw", function()
 			useRipperDocs 	= false
 		end
 		ImGui.Separator()
+		if(QuestsEnabled == true) then
+			QEMess = "Disable - Quests on HUD"
+		else
+			QEMess = "Enable - Quests on HUD"
+		end
+		state, pressed = ImGui.Checkbox(QEMess, QuestsEnabled)
+    	if pressed then
+			QuestsEnabled 		= false
+        	QuestsEnabled 		= state
+			save_settings(userSettingsFile)
+    	end
+		ImGui.Separator()
 		if DEBUG then
 			ImGui.Text("Life Packs:")
 			ImGui.Text("this is just for me.. im just lazy tp go there... everytime")
@@ -426,6 +449,9 @@ registerForEvent("onDraw", function()
 				Game.TeleportPlayerToPosition(-1361.7752685547, 1741.9836425781, 18.190002441406)
 			end
 			ImGui.Separator()
+			local player = Game.GetPlayer()
+			local pos = player:GetWorldPosition()
+			ImGui.Text("Your Current position: X = " .. pos.x .. " Y = " .. pos.y .. " Z = " .. pos.z)
 		end
 		if ImGui.Button("Save settings") then
 			save_settings(userSettingsFile)
@@ -446,6 +472,7 @@ function save_settings(filename)
 		useRipperDocs 	= useRipperDocs,
 		useOldFeatures 	= useOldFeatures,
 		useVApartment 	= useVApartment,
+		QuestsEnabled 	= QuestsEnabled,
 	}
 	local file = io.open(filename, "w")
 	local j = json.encode(data)
@@ -457,7 +484,7 @@ end
 
 function load_settings(filename)
 	if not file_exists(filename) then
-		print("Vs Pro Cyberpsycho: loading settings from " .. filename .. " failed, file didnt exist?")
+		print("Death Alternative: loading settings from " .. filename .. " failed, file didnt exist?")
 		return false
 	end
 	local file = io.open(filename,"r")
@@ -467,6 +494,7 @@ function load_settings(filename)
 	useRipperDocs 	= j["useRipperDocs"]
 	useOldFeatures 	= j["useOldFeatures"]
 	useVApartment 	= j["useVApartment"]
+	QuestsEnabled 	= j["QuestsEnabled"]
 	print("Death Alternative: loaded settings from " .. filename)
 	return true
 end

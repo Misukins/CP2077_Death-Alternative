@@ -70,8 +70,8 @@ local ripperDocsSpawnTable = { -- RipperDocs
 	[17] = { -1072.172729, -1274.062866,  11.456871 },
 }
 
-local CPS = require("config/CPStyling")
-local Utils = require("config/utilities")
+local CPS = require("module/CPStyling")
+local Utils = require("module/utilities")
 local heme = CPS.theme
 local color = CPS.color
 local Config = {
